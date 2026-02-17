@@ -9,8 +9,10 @@
 
 ## Features
 - City autocomplete and geolocation
-- Unit toggle and favorites
+- Unit toggle
+- Compare cities view (up to 3 at a time)
 - Current conditions, hourly, 7-day forecast
 - Air quality, alerts, and astro details
 - Offline cached fallback
+- PWA install support
 - Node proxy with caching and rate limiting

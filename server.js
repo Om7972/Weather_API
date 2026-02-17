@@ -1,8 +1,14 @@
 ﻿const express = require("express");
 const path = require("path");
 
+try {
+  require("dotenv").config();
+} catch {
+  // dotenv is optional; fall back to process.env if not installed
+}
+
 const API_KEY = process.env.WEATHER_API_KEY;
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3004;
 
 if (!API_KEY) {
   console.error("Missing WEATHER_API_KEY. Create a .env file or set the environment variable.");

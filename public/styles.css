@@ -184,15 +184,6 @@ button.ghost {
   color: #fff;
 }
 
-.tiny {
-  padding: 6px 10px;
-  font-size: 12px;
-}
-
-.current-actions {
-  margin-top: 8px;
-}
-
 .badge {
   background: var(--accent-2);
   color: #fff;
@@ -219,20 +210,46 @@ button.ghost {
   background: rgba(15, 23, 42, 0.05);
 }
 
-.favorites {
-  margin-top: 12px;
+.compare {
+  margin: 18px 0 28px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px dashed var(--border);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.compare-head {
   display: flex;
-  gap: 8px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
-.fav-chip {
+.compare-form {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.compare-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.compare-card {
+  border-radius: 14px;
   border: 1px solid var(--border);
-  padding: 6px 10px;
-  border-radius: 999px;
-  cursor: pointer;
-  background: var(--card);
-  font-size: 13px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.compare-temp {
+  font-size: 22px;
+  font-weight: 600;
 }
 
 .grid {

@@ -2,13 +2,14 @@
 const statusEl = document.getElementById("status");
 const offlineBadge = document.getElementById("offlineBadge");
 const suggestionsEl = document.getElementById("suggestions");
-const favoritesEl = document.getElementById("favorites");
 const inputEl = document.getElementById("locationInput");
 const searchForm = document.getElementById("searchForm");
 const unitMetric = document.getElementById("unitMetric");
 const unitImperial = document.getElementById("unitImperial");
 const geoBtn = document.getElementById("geoBtn");
-const saveFavorite = document.getElementById("saveFavorite");
+const compareForm = document.getElementById("compareForm");
+const compareInput = document.getElementById("compareInput");
+const compareGrid = document.getElementById("compareGrid");
 
 const locationName = document.getElementById("locationName");
 const tempEl = document.getElementById("temp");
@@ -33,7 +34,6 @@ const alertsList = document.getElementById("alertsList");
 
 const state = {
   unit: localStorage.getItem("weather_unit") || "metric",
-  favorites: JSON.parse(localStorage.getItem("weather_favorites") || "[]"),
   lastData: JSON.parse(localStorage.getItem("weather_last") || "null"),
   lastQuery: localStorage.getItem("weather_last_query") || ""
 };
@@ -52,10 +52,6 @@ function setUnit(unit) {
   unitMetric.classList.toggle("active", unit === "metric");
   unitImperial.classList.toggle("active", unit === "imperial");
   if (state.lastData) renderWeather(state.lastData);
-}
-
-function saveState() {
-  localStorage.setItem("weather_favorites", JSON.stringify(state.favorites));
 }
 
 function isMetric() {
@@ -123,33 +119,6 @@ function setTheme(current) {
   if (text.includes("mist") || text.includes("fog")) return document.body.setAttribute("data-theme", "mist");
   if (text.includes("cloud")) return document.body.setAttribute("data-theme", "clear");
   document.body.setAttribute("data-theme", "clear");
-}
-
-function renderFavorites() {
-  favoritesEl.innerHTML = "";
-  if (!state.favorites.length) {
-    const empty = document.createElement("div");
-    empty.className = "muted";
-    empty.textContent = "No favorites yet. Save a city to quick switch.";
-    favoritesEl.appendChild(empty);
-    return;
-  }
-  state.favorites.forEach((fav) => {
-    const btn = document.createElement("button");
-    btn.className = "fav-chip";
-    btn.textContent = fav;
-    btn.addEventListener("click", () => fetchWeather(fav));
-    favoritesEl.appendChild(btn);
-  });
-}
-
-function addFavorite(name) {
-  if (!name) return;
-  if (state.favorites.includes(name)) return;
-  state.favorites.unshift(name);
-  state.favorites = state.favorites.slice(0, 8);
-  saveState();
-  renderFavorites();
 }
 
 function removeSuggestions() {
@@ -310,6 +279,47 @@ async function fetchSuggestions(query) {
   }
 }
 
+function renderCompare(data) {
+  const temp = isMetric() ? data.current.temp_c : data.current.temp_f;
+  const feels = isMetric() ? data.current.feelslike_c : data.current.feelslike_f;
+  const windVal = isMetric() ? data.current.wind_kph : data.current.wind_mph;
+  const icon = data.current.condition.icon.startsWith("//") ? `https:${data.current.condition.icon}` : data.current.condition.icon;
+
+  const card = document.createElement("div");
+  card.className = "compare-card";
+  card.innerHTML = `
+    <div class="label">${data.location.name}, ${data.location.country}</div>
+    <div class="compare-temp">${formatTemp(temp)}</div>
+    <div class="muted">Feels like ${formatTemp(feels)}</div>
+    <div>${data.current.condition.text}</div>
+    <div class="muted">Wind ${formatSpeed(windVal)}</div>
+    <img src="${icon}" alt="${data.current.condition.text}" width="36" height="36" />
+  `;
+  compareGrid.appendChild(card);
+}
+
+async function fetchCompare(query) {
+  compareGrid.innerHTML = "";
+  const items = query.split(",").map(item => item.trim()).filter(Boolean).slice(0, 3);
+  if (!items.length) return;
+
+  setStatus("Comparing cities...");
+
+  try {
+    const results = await Promise.all(items.map(async (item) => {
+      const resp = await fetch(`/api/weather?query=${encodeURIComponent(item)}`);
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || `Failed for ${item}`);
+      return data;
+    }));
+
+    results.forEach(renderCompare);
+    setStatus("Compare updated.");
+  } catch (err) {
+    setStatus(err.message || "Compare failed.");
+  }
+}
+
 function debounce(fn, delay) {
   let timer;
   return (...args) => {
@@ -321,6 +331,11 @@ function debounce(fn, delay) {
 searchForm.addEventListener("submit", (event) => {
   event.preventDefault();
   fetchWeather(inputEl.value.trim());
+});
+
+compareForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  fetchCompare(compareInput.value.trim());
 });
 
 inputEl.addEventListener("input", debounce((event) => {
@@ -345,11 +360,6 @@ geoBtn.addEventListener("click", () => {
   );
 });
 
-saveFavorite.addEventListener("click", () => {
-  const name = locationName.textContent.trim();
-  addFavorite(name);
-});
-
 window.addEventListener("offline", () => {
   offlineBadge.hidden = false;
 });
@@ -358,7 +368,14 @@ window.addEventListener("online", () => {
   offlineBadge.hidden = true;
 });
 
-renderFavorites();
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/service-worker.js").catch(() => {
+      setStatus("Service worker registration failed.");
+    });
+  });
+}
+
 setUnit(state.unit);
 
 if (state.lastQuery) {

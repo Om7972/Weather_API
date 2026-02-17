@@ -6,7 +6,9 @@
   <title>Weather App</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1d9b7b" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body data-theme="clear">
@@ -39,8 +41,18 @@
         <button type="button" id="geoBtn" class="ghost">Use My Location</button>
         <div class="badge" id="offlineBadge" hidden>Offline</div>
       </div>
+    </section>
 
-      <div class="favorites" id="favorites"></div>
+    <section class="compare">
+      <div class="compare-head">
+        <h3>Compare Cities</h3>
+        <p class="muted">Enter up to 3 cities separated by commas.</p>
+      </div>
+      <form id="compareForm" class="compare-form">
+        <input id="compareInput" type="text" placeholder="New York, London, Tokyo" />
+        <button type="submit" class="ghost">Compare</button>
+      </form>
+      <div id="compareGrid" class="compare-grid"></div>
     </section>
 
     <section class="grid">
@@ -50,9 +62,6 @@
             <p class="muted" id="locationName" data-skeleton>City, Country</p>
             <h2 id="temp" data-skeleton>--</h2>
             <p class="muted" id="condition" data-skeleton>Condition</p>
-            <div class="current-actions">
-              <button type="button" id="saveFavorite" class="ghost tiny">Save</button>
-            </div>
           </div>
           <div class="icon-wrap">
             <img id="conditionIcon" alt="Weather icon" />
