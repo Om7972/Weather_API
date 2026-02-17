@@ -1,0 +1,12 @@
+﻿{
+  "name": "weather-api-app",
+  "version": "1.0.0",
+  "description": "Weather API app with Node proxy and responsive UI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

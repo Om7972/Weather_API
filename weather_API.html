@@ -1,77 +1,38 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Weather App</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 50px;
-            background-color: #f4f4f4;
-        }
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            display: inline-block;
-        }
-        input {
-            padding: 10px;
-            margin: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        button {
-            padding: 10px 15px;
-            border: none;
-            background: #007bff;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #0056b3;
-        }
-        #weather-result {
-            margin-top: 20px;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        color: #1f2937;
+      }
+      .card {
+        max-width: 520px;
+        padding: 24px;
+        border-radius: 16px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+      }
+      code {
+        background: #e2e8f0;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
     </style>
-</head>
-<body>
-    <div class="container">
-        <h2>Weather App</h2>
-        <input type="text" id="location" placeholder="Enter location">
-        <button onclick="getWeather()">Get Weather</button>
-        <div id="weather-result"></div>
+  </head>
+  <body>
+    <div class="card">
+      <h2>Weather App</h2>
+      <p>
+        The app has been moved to the clean structure under <code>public/</code> and
+        is served by the Node backend.
+      </p>
+      <p>Run <code>npm install</code> then <code>npm start</code> and open:</p>
+      <p><code>http://localhost:3000</code></p>
     </div>
-
-    <script>
-        function getWeather() {
-            const location = document.getElementById('location').value;
-            if (!location) {
-                alert('Please enter a location');
-                return;
-            }
-            const apiKey = '2668a8bdccd0499ba35131739250302';
-            const url = `http://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${location}&aqi=yes`;
-            
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('weather-result').innerHTML = `
-                        <h3>Weather in ${data.location.name}, ${data.location.country}</h3>
-                        <p>Temperature: ${data.current.temp_c}°C</p>
-                        <p>Condition: ${data.current.condition.text}</p>
-                        <img src="${data.current.condition.icon}" alt="Weather icon">
-                    `;
-                })
-                .catch(error => {
-                    document.getElementById('weather-result').innerHTML = '<p>Error fetching weather data</p>';
-                });
-        }
-    </script>
-</body>
+  </body>
 </html>
