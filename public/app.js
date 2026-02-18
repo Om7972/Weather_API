@@ -246,12 +246,27 @@ async function fetchWeather(query) {
   setStatus("Loading...");
   removeSuggestions();
   try {
-    const resp = await fetch(`/api/weather?query=${encodeURIComponent(query)}`);
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || "Weather fetch failed");
-    state.lastQuery = query;
-    localStorage.setItem("weather_last_query", query);
-    renderWeather(data, false);
+    const candidates = [query];
+    const isNumeric = /^[0-9]{5,6}$/.test(query);
+    if (isNumeric && !query.includes(",")) {
+      candidates.push(`${query},IN`, `${query},US`);
+    }
+
+    let lastError = null;
+    for (const candidate of candidates) {
+      const resp = await fetch(`/api/weather?query=${encodeURIComponent(candidate)}`);
+      const data = await resp.json();
+      if (!resp.ok) {
+        lastError = new Error(data.error || "Weather fetch failed");
+        continue;
+      }
+      state.lastQuery = candidate;
+      localStorage.setItem("weather_last_query", candidate);
+      renderWeather(data, false);
+      return;
+    }
+
+    throw lastError || new Error("Weather fetch failed");
   } catch (err) {
     if (state.lastData) {
       renderWeather(state.lastData, true);

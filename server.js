@@ -8,6 +8,10 @@ try {
 }
 
 const API_KEY = process.env.WEATHER_API_KEY;
+const DEFAULT_COUNTRIES = (process.env.WEATHER_DEFAULT_COUNTRIES || "IN,US")
+  .split(",")
+  .map((c) => c.trim())
+  .filter(Boolean);
 const PORT = process.env.PORT || 3004;
 
 if (!API_KEY) {
@@ -65,6 +69,17 @@ async function fetchJson(url) {
   return data;
 }
 
+function buildQueryCandidates(query) {
+  const trimmed = String(query || "").trim();
+  if (!trimmed) return [];
+  const hasCountrySuffix = /,\s*[A-Za-z]{2}$/.test(trimmed);
+  const isNumeric = /^[0-9]{5,6}$/.test(trimmed);
+  if (isNumeric && !hasCountrySuffix && DEFAULT_COUNTRIES.length) {
+    return [trimmed, ...DEFAULT_COUNTRIES.map((c) => `${trimmed},${c}`)];
+  }
+  return [trimmed];
+}
+
 function getCached(key) {
   const cached = cache.get(key);
   if (!cached) return null;
@@ -103,21 +118,32 @@ app.get("/api/weather", rateLimit, async (req, res) => {
   const query = String(req.query.query || req.query.q || "").trim();
   if (!query) return res.status(400).json({ error: "Missing query parameter" });
 
-  const cacheKey = `weather:${query.toLowerCase()}`;
-  const cached = getCached(cacheKey);
-  if (cached) return res.json(cached);
-
   try {
-    const url = new URL("https://api.weatherapi.com/v1/forecast.json");
-    url.searchParams.set("key", API_KEY);
-    url.searchParams.set("q", query);
-    url.searchParams.set("days", "7");
-    url.searchParams.set("aqi", "yes");
-    url.searchParams.set("alerts", "yes");
+    const candidates = buildQueryCandidates(query);
+    let lastError = null;
 
-    const data = await fetchJson(url.toString());
-    setCached(cacheKey, data);
-    return res.json(data);
+    for (const candidate of candidates) {
+      const cacheKey = `weather:${candidate.toLowerCase()}`;
+      const cached = getCached(cacheKey);
+      if (cached) return res.json(cached);
+
+      const url = new URL("https://api.weatherapi.com/v1/forecast.json");
+      url.searchParams.set("key", API_KEY);
+      url.searchParams.set("q", candidate);
+      url.searchParams.set("days", "7");
+      url.searchParams.set("aqi", "yes");
+      url.searchParams.set("alerts", "yes");
+
+      try {
+        const data = await fetchJson(url.toString());
+        setCached(cacheKey, data);
+        return res.json(data);
+      } catch (err) {
+        lastError = err;
+      }
+    }
+
+    throw lastError || new Error("Weather fetch failed");
   } catch (err) {
     return res.status(err.status || 500).json({ error: err.message || "Weather fetch failed" });
   }
