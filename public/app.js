@@ -306,15 +306,31 @@ async function fetchCompare(query) {
   setStatus("Comparing cities...");
 
   try {
-    const results = await Promise.all(items.map(async (item) => {
+    const results = await Promise.allSettled(items.map(async (item) => {
       const resp = await fetch(`/api/weather?query=${encodeURIComponent(item)}`);
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || `Failed for ${item}`);
       return data;
     }));
 
-    results.forEach(renderCompare);
-    setStatus("Compare updated.");
+    const successes = results.filter(r => r.status === "fulfilled").map(r => r.value);
+    const failures = results
+      .map((r, idx) => (r.status === "rejected" ? items[idx] : null))
+      .filter(Boolean);
+
+    successes.forEach(renderCompare);
+
+    if (successes.length && !failures.length) {
+      setStatus("Compare updated.");
+      return;
+    }
+
+    if (successes.length && failures.length) {
+      setStatus(`Some locations not found: ${failures.join(", ")}.`);
+      return;
+    }
+
+    setStatus(`No results for: ${failures.join(", ")}.`);
   } catch (err) {
     setStatus(err.message || "Compare failed.");
   }
