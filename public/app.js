@@ -108,16 +108,6 @@ function aqiInfo(index) {
 }
 
 function setTheme(current) {
-  if (!current || current.is_day === 0) {
-    document.body.setAttribute("data-theme", "night");
-    return;
-  }
-  const text = (current.condition && current.condition.text || "").toLowerCase();
-  if (text.includes("snow") || text.includes("ice")) return document.body.setAttribute("data-theme", "snow");
-  if (text.includes("thunder") || text.includes("storm")) return document.body.setAttribute("data-theme", "storm");
-  if (text.includes("rain") || text.includes("drizzle")) return document.body.setAttribute("data-theme", "rain");
-  if (text.includes("mist") || text.includes("fog")) return document.body.setAttribute("data-theme", "mist");
-  if (text.includes("cloud")) return document.body.setAttribute("data-theme", "clear");
   document.body.setAttribute("data-theme", "clear");
 }
 
@@ -248,8 +238,12 @@ async function fetchWeather(query) {
   try {
     const candidates = [query];
     const isNumeric = /^[0-9]{5,6}$/.test(query);
-    if (isNumeric && !query.includes(",")) {
-      candidates.push(`${query},IN`, `${query},US`);
+    if (isNumeric) {
+      if (query.length === 5) {
+        candidates.push(`${query},US`, `${query},IN`);
+      } else {
+        candidates.push(`${query},IN`, `${query},US`);
+      }
     }
 
     let lastError = null;

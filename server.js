@@ -75,7 +75,9 @@ function buildQueryCandidates(query) {
   const hasCountrySuffix = /,\s*[A-Za-z]{2}$/.test(trimmed);
   const isNumeric = /^[0-9]{5,6}$/.test(trimmed);
   if (isNumeric && !hasCountrySuffix && DEFAULT_COUNTRIES.length) {
-    return [trimmed, ...DEFAULT_COUNTRIES.map((c) => `${trimmed},${c}`)];
+    const prioritized = DEFAULT_COUNTRIES.map((c) => `${trimmed},${c}`);
+    prioritized.push(trimmed);
+    return prioritized;
   }
   return [trimmed];
 }
